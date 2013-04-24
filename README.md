@@ -11,8 +11,9 @@
 "a work in progress...."
 ----------------------
 
-This is an attempt at building a DSL in Ruby using the DPLA api. This is just a start. Maybe a bad, overly complicated idea, but 
-I was wanting to get more practice at writing a DSL library...
+This is an attempt at building a DSL in Ruby using the DPLA api. 
+This is just a start. 
+Maybe a bad, overly complicated idea, but I was wanting to get more practice at writing a DSL library...
 
 
 ## Installation
@@ -20,8 +21,8 @@ Now:
 rake build
 gem install pkg/america-0.0.1.gem
 
-Eventually: 
-Add this line to your application's Gemfile:
+<del> 
+  Add this line to your application's Gemfile:
 
     gem 'america'
 
@@ -32,6 +33,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install america
+</del>
 
 ## Usage
 
@@ -40,12 +42,20 @@ A search library for the dp.la api ( https://github.com/dpla/platform/ ). Also p
 In order to access the API, you must have a DPLA api key. This can be set as ENV["DPL_API_KEY"] or America::Configuration.api_key("YOUR KEY HERE"). 
 
 Basic queries can be done with: 
-> America::Search::Search.new({ "sourceResource.description" => "perplexed" } ).perform
-> search = America.search({ "sourceResource.description" => "perplexed" } )
-> search.results # queries are lazy, so it does not execute until you ask...
-which translate into: 
-> 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&sourceResource.description=perplexed'
 
+<pre>
+ America::Search::Search.new({ "sourceResource.description" => "perplexed" } ).perform
+
+ ## OR 
+ search = America.search({ "sourceResource.description" => "perplexed" } )
+ search.results # queries are lazy, so it does not execute until you ask...
+</pre>
+
+which translate into: 
+
+<pre>
+ 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&sourceResource.description=perplexed'
+</pre>
 Or use the DSL: 
 <pre>
  American.new do
@@ -61,8 +71,10 @@ Or use the DSL:
  end.perform
 </pre>
 
-which translate into: > 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&q=a+free+text+query&sourceResource.date.after=1963-11-01&sourceResource.date.before=1963-11-30&sourceResource.description=perplexed&sourceResource.title=fruit'
-
+which translate into:
+</pre>
+ 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&q=a+free+text+query&sourceResource.date.after=1963-11-01&sourceResource.date.before=1963-11-30&sourceResource.description=perplexed&sourceResource.title=fruit'
+</pre>
 
 ## To-Do
 
