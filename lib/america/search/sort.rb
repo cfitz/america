@@ -24,7 +24,7 @@ module America
       end
 
       def to_ary
-        @value
+        [@value]
       end
 
       def to_json(options={})

@@ -33,12 +33,12 @@ module America::Search
 
 
       should "encode fields deeper in json" do
+        s = Sort.new { by 'sourceResource.title'; order :desc }
+        output = { :sort_by => ['sourceResource.title' ], :sort_order => :desc }
+        assert_equal output.to_json, s.to_json
+          
         s = Sort.new { by 'sourceResource.date.begin' }
         output = { :sort_by => [ 'sourceResource.date.begin' ] }
-        assert_equal output.to_json, s.to_json
-
-        s = Sort.new { by 'author.name'; order :desc }
-        output = { :sort_by => ['author.name' ], :sort_order => :desc }
         assert_equal output.to_json, s.to_json
       end
       

@@ -14,15 +14,17 @@ require "america/configuration"
 require "america/logger"
 
 require "america/dsl"
-require 'america/search'
+
+require 'america/search/search'
+require 'america/search/query'
 require 'america/search/sort'
+require 'america/search/spatial'
 
 
 require 'america/results/pagination'
 require 'america/results/collection'
 require 'america/results/item'
 
-require 'america/query'
 
 require 'america/http/response'
 require 'america/http/client'

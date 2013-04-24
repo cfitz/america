@@ -40,17 +40,18 @@ A search library for the dp.la api ( https://github.com/dpla/platform/ ). Also p
 In order to access the API, you must have a DPLA api key. This can be set as ENV["DPL_API_KEY"] or America::Configuration.api_key("YOUR KEY HERE"). 
 
 Basic queries can be done with: 
-> Search::Search.new('items',{ "sourceResource.description" => "perplexed" } ).perform
-
+> America::Search::Search.new({ "sourceResource.description" => "perplexed" } ).perform
+> search = America.search({ "sourceResource.description" => "perplexed" } )
+> search.results # queries are lazy, so it does not execute until you ask...
 which translate into: 
 > 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&sourceResource.description=perplexed'
 
 Or use the DSL: 
 <pre>
- America::Search::Search.new() do
+ American.new do
    query do
      string "a free text query"
-     source_resource { description "perplexed"; title "fruit"; date { before("1963-11-30"); after("1963-11-01")  } }
+     source_resource { description "perplexed"; title "fruit"; date { before("1963-11-30"); after("1963-11-01")  }; spatial { state("Oklahoma")}; }
    end
    sort do 
      by "sourceResource.spatial.coordinates"

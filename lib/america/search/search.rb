@@ -4,10 +4,10 @@ module America
 
     class Search
 
-      attr_reader :query_type, :query, :facets, :filters, :options, :explain, :script_fields
+      attr_reader :query_type, :query, :facets, :fields, :options, :filters
 
-      def initialize(query_type='items', options={}, &block)
-        @query_type = query_type
+      def initialize(options={}, &block)
+        @query_type = ( options.is_a?(Hash) && options[:query_type] ) ? options[:query_type] : "items"
         @options = options
         @options[:api_key]  ||= api_key
         @path    = "/#{ @query_type }"
@@ -46,7 +46,7 @@ module America
       # this is hacky, but works with the to_param. We don't want `[]` or `]`, and `[` we want a `.`. And we want `,` unescaped.
       # this sucks. fix this.  
       def url_encode(options)
-        params = options.to_param.gsub("%5B%5D", "").gsub("%5B", ".").gsub("%5D", "").gsub("%2C", ",")
+        params = options.to_query.gsub("%5B%5D", "").gsub("%5B", ".").gsub("%5D", "").gsub("%2C", ",")
       end
 
       def query(&block)
@@ -65,13 +65,6 @@ module America
         @facets.update Facet.new(name, options, &block).to_hash
         self
       end
-
-      def filter(type, *options)
-        @filters ||= []
-        @filters << Filter.new(type, *options).to_hash
-        self
-      end
-
      
       def from(value)
         @from = value
@@ -84,7 +77,7 @@ module America
         @options[:page_size] = value
         self
       end
-
+      
       def perform    
         @response = Configuration.client.get(self.url + self.params)
         if @response.failure?
@@ -104,34 +97,21 @@ module America
       end
 
 
-      # this is just here for debugging now. The DPLA api does not take GET payloads.
+
       def to_hash
           request = {}
+          request.update({ :query_type => @query_type})       if @query_type
           request.update( { :sort   => @sort.to_hash   } )    if @sort
-          request.update( { :facets => @facets.to_hash } )   if @facets
-          request.update( { :filter => @filters.first.to_hash } ) if @filters && @filters.size == 1
-          request.update( { :filter => { :and => @filters.map {|filter| filter.to_hash} } } ) if  @filters && @filters.size > 1
-          request.update( { :highlight => @highlight.to_hash } ) if @highlight
-          request.update( { :page_size => @page_size } )               if @page_size
-          request.update( { :from => @from } )               if @from
-          request.update( { :fields => @fields } )           if @fields
-          request.update( { :partial_fields => @partial_fields } ) if @partial_fields
-          request.update( { :script_fields => @script_fields } ) if @script_fields
-          request.update( { :version => @version } )         if @version
-          request.update( { :explain => @explain } )         if @explain
-          request.update( { :min_score => @min_score } )     if @min_score
-          request.update( { :track_scores => @track_scores } ) if @track_scores
+          request.update( { :facets => @facets.to_hash } )    if @facets
+          request.update( { :page_size => @page_size } )      if @page_size
+          request.update( { :from => @from } )                if @from
+          request.update( { :fields => @fields } )            if @fields
+          request.update( { :query => @query })               if @query
           request
       end
 
       def to_json(options={})
-        payload = to_hash
-        # TODO: Remove when deprecated interface is removed
-        if payload.is_a?(String)
-          payload
-        else
-          MultiJson.encode(payload, :pretty => Configuration.pretty)
-        end
+          MultiJson.encode(to_hash, :pretty => Configuration.pretty)
       end
 
       def logged(endpoint='items')

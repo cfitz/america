@@ -21,7 +21,11 @@ module America
       # Delegate method to a key in underlying hash, if present, otherwise return +nil+.
       #
       def method_missing(method_name, *arguments)
-        @attributes[method_name.to_sym]
+        if @attributes[:sourceResource].to_hash.has_key?(method_name.to_sym)
+           return @attributes[:sourceResource][method_name.to_sym]
+        else
+          return @attributes[method_name.to_sym]
+        end
       end
 
       def respond_to?(method_name, include_private = false)

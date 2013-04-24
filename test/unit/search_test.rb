@@ -13,7 +13,7 @@ module America
         Configuration.client.expects(:get).returns(response)
         Results::Collection.expects(:new).returns([])
 
-        s = Search::Search.new('items')
+        s = Search::Search.new()
         assert_not_nil s.results
         assert_not_nil s.response
         assert_not_nil s.json
@@ -22,24 +22,37 @@ module America
       
       should "perform the search when passing params as a hash" do
         response = mock_response '{"start":0,"docs":[]}', 200
+        
+        query = { "sourceResource.description" => "perplexed", :q => "a+free+text+query" }
         Configuration.client.expects(:get).with do |url|
-            url == 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&sourceResource.description=perplexed'
+            url.include? 'http://api.dp.la/v2/items'
+            url.include? '?api_key=MYDPLAAPIKEY'
+            url.include? '&sourceResource.description=perplexed'
         end.returns(response)
         Results::Collection.expects(:new).returns([])
-        s = Search::Search.new('items',{ "sourceResource.description" => "perplexed" } ).perform
+        s = America.search( query ).perform
       end
       
       
       should "perform a query search when using the DSL" do
           response = mock_response '{"start":0,"docs":[]}', 200
           Configuration.client.expects(:get).with do |url|
-              url == 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&q=a+free+text+query&sort_by=sourceResource.spatial.coordinates&sort_by_pin=41.3,-71&sort_order=desc&sourceResource.date.after=1963-11-01&sourceResource.date.before=1963-11-30&sourceResource.description=perplexed&sourceResource.title=fruit'
+              url.include? 'http://api.dp.la/v2/items?'
+              url.include? 'api_key=MYDPLAAPIKEY'
+              url.include? '&q=a+free+text+query'
+              url.include? '&sort_by=sourceResource.spatial.coordinates'
+              url.include? '&sort_by_pin=41.3,-71'
+              url.include? '&sort_order=desc&sourceResource.date.after=1963-11-01'
+              url.include? '&sourceResource.date.before=1963-11-30'
+              url.include? '&sourceResource.description=perplexed'
+              url.include? '&sourceResource.spatial.state=Massachusetts'
+              url.include? '&sourceResource.title=fruit'
           end.returns(response)
           Results::Collection.expects(:new).returns([])
-          s = America::Search::Search.new() do
+          s = America.search do
             query do
               string "a free text query"
-              source_resource { description "perplexed"; title "fruit"; date { before("1963-11-30"); after("1963-11-01")  } }
+              source_resource { description "perplexed"; title bool_and ["fruit", "nuts"]; date { before("1963-11-30"); after("1963-11-01")  }; spatial { state("Massachusetts")  }; }
             end
             sort do 
               by "sourceResource.spatial.coordinates"
@@ -56,7 +69,7 @@ module America
                               raises(::RestClient::InternalServerError)
         STDERR.expects(:puts)
 
-        s = Search::Search.new('item')
+        s = Search::Search.new()
         assert_raise Search::SearchRequestFailed do
           s.perform
         end
@@ -71,7 +84,7 @@ module America
         Configuration.logger.expects(:log_request).returns(true)
         Configuration.logger.expects(:log_response).with(200, '')
 
-        Search::Search.new('items').perform
+        Search::Search.new().perform
       end
 
       should "log the original exception on failed request" do
@@ -81,12 +94,12 @@ module America
         Configuration.logger.expects(:log_response).with('N/A', '')
 
         assert_raise Errno::ECONNREFUSED do
-          Search::Search.new('items').perform
+          Search::Search.new().perform
         end
       end
 
       should "allow to set the server url" do
-        search = Search::Search.new('items')
+        search = Search::Search.new()
         Configuration.url 'http://api.dp.la/v2'
 
         Configuration.client.

@@ -138,6 +138,14 @@ module America
         @value[method_name] = arguments.join("+")
       end
       
+      def bool_and(args)
+        args.join("+AND+")
+      end
+      
+      def or(args)
+        args.join("+OR+")
+      end
+      
       def to_hash
         @value
       end
@@ -148,6 +156,13 @@ module America
         @value[:date] = @date.to_hash
         @value
     end
+    
+      def spatial( &block)
+        @spatial = Spatial.new( &block)
+        block.arity < 1 ? @spatial.instance_eval(&block) : block.call(@spatial) if block_given?
+        @value[:spatial] = @spatial.to_hash
+        @value
+      end
    
       
   end
