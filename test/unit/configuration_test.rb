@@ -19,6 +19,11 @@ module America
         Configuration.reset
       end
 
+      should "be able to configure through the America.configure(&block)" do
+        America.configure { url "http://foo.bar"} 
+        assert_equal "http://foo.bar", Configuration.url
+      end
+
       should "return default URL" do
         assert_equal 'http://api.dp.la/v2', Configuration.url
       end
@@ -51,7 +56,7 @@ module America
         assert_not_nil Configuration.logger
         assert_instance_of America::Logger, Configuration.logger
       end
-
+    
       should "set pretty option to true by default" do
         assert_not_nil Configuration.pretty
         assert Configuration.pretty, "Should be true, but is: #{Configuration.pretty.inspect}"

@@ -26,7 +26,7 @@ class Test::Unit::TestCase
     return true
   end if defined?(RUBY_VERSION) && RUBY_VERSION < '1.9'
 
-  def mock_response(body, code=200, headers={})
+  def mock_response(body= '{"start":0,"docs":[]}', code=200, headers={})
     America::HTTP::Response.new(body, code, headers)
   end
 

@@ -39,7 +39,11 @@ Or install it yourself as:
 
 A search library for the dp.la api ( https://github.com/dpla/platform/ ). Also provides a basic DSL for searching, similar to the ElasticSearch Tire library. 
 
-In order to access the API, you must have a DPLA api key. This can be set as ENV["DPL_API_KEY"] or America::Configuration.api_key("YOUR KEY HERE"). 
+In order to access the API, you must have a DPLA api key. 
+This can be set as a environment variable:
+> ENV["DPLA_API_KEY"] 
+or passed into the configuration: 
+> America::Configuration.api_key("YOUR KEY HERE")
 
 Basic queries can be done with: 
 
@@ -48,7 +52,9 @@ Basic queries can be done with:
 
  ## OR 
  search = America.search({ "sourceResource.description" => "perplexed" } )
- search.results # queries are lazy, so it does not execute until you ask...
+ results = search.results # queries are lazy, so it does not execute until you ask...
+ result = results.first
+ results.title
 </pre>
 
 which translate into: 
@@ -58,11 +64,13 @@ which translate into:
 </pre>
 Or use the DSL: 
 <pre>
- American.new do
+ America.search do
    query do
-     string "a free text query"
+     keyword "a free text query"
      source_resource { description "perplexed"; title "fruit"; date { before("1963-11-30"); after("1963-11-01")  }; spatial { state("Oklahoma")}; }
    end
+   facet("sourceResource.date.begin")
+   facet("sourceResource.spatial.coordinates", "42.3:-71:20mi")
    sort do 
      by "sourceResource.spatial.coordinates"
      order :desc
@@ -72,8 +80,8 @@ Or use the DSL:
 </pre>
 
 which translate into:
-</pre>
- 'http://api.dp.la/v2/items?api_key=MYDPLAAPIKEY&q=a+free+text+query&sourceResource.date.after=1963-11-01&sourceResource.date.before=1963-11-30&sourceResource.description=perplexed&sourceResource.title=fruit'
+<pre>
+ "http://api.dp.la/v2/items?api_key=OHHAIMYAPIKEY&facets=sourceResource.date.begin&facets=sourceResource.spatial.coordinates%3A42.3%3A-71%3A20mi&q=a+free+text+query&sort_by=sourceResource.spatial.coordinates&sort_by_pin=41.3,-71&sort_order=desc&sourceResource.date.after=1963-11-01&sourceResource.date.before=1963-11-30&sourceResource.description=perplexed&sourceResource.spatial.state=Oklahoma&sourceResource.title=fruit" 
 </pre>
 
 ## To-Do

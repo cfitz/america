@@ -10,7 +10,7 @@ module America
       @api_key = key || @api_key || ENV["DPLA_API_KEY"] || ( raise America::ParameterError, "DPLA API cannot be blank. Please set it by either America::Configuration.api_key() or ENV['DPLA_API_KEY']" )
     end
 
-
+    # currently only supporting RestClient. Maybe add Curb or Faraday in future...
     def self.client(klass=nil)
       @client = klass || @client || HTTP::Client::RestClient
     end

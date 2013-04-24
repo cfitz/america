@@ -26,7 +26,7 @@ module America
         if @options[:page]
           @options[:page].to_i
         else
-          (per_page + @options[:from].to_i) / per_page
+          (per_page + @options[:page].to_i) / per_page
         end
       end
 

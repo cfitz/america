@@ -1,13 +1,14 @@
 module America
   module Search
+    
     class SearchRequestFailed < StandardError; end
 
     class Search
 
       attr_reader :query_type, :query, :facets, :fields, :options, :filters
 
-      def initialize(options={}, &block)
-        @query_type = ( options.is_a?(Hash) && options[:query_type] ) ? options[:query_type] : "items"
+      def initialize(options={}, query_type = "items",  &block)
+        @query_type = query_type
         @options = options
         @options[:api_key]  ||= api_key
         @path    = "/#{ @query_type }"
@@ -28,8 +29,12 @@ module America
         @json   || (perform; @json)
       end
 
-      def url
+      def base_url
         Configuration.url + @path
+      end
+
+      def url
+        self.base_url + self.params
       end
       
       def api_key
@@ -37,9 +42,10 @@ module America
       end
 
       def params
-        options = @options.except(:wrapper, :payload)
+        options = @options
         options.update( @query.to_hash ) if @query
         options.update( @sort.to_hash) if @sort
+        options.update( @facets.to_facets_query ) if @facets
         options.empty? ? '' : '?' + url_encode(options) 
       end
 
@@ -60,15 +66,15 @@ module America
         self
       end
 
-      def facet(name, options={}, &block)
+      def facet(name, values=[])
         @facets ||= {}
-        @facets.update Facet.new(name, options, &block).to_hash
+        @facets.update Facet.new(name, values).to_hash
         self
       end
-     
-      def from(value)
-        @from = value
-        @options[:from] = value
+
+      def page(value)
+        @page = value
+        @options[:page] = value
         self
       end
 
@@ -79,7 +85,7 @@ module America
       end
       
       def perform    
-        @response = Configuration.client.get(self.url + self.params)
+        @response = Configuration.client.get(self.url)
         if @response.failure?
           STDERR.puts "[REQUEST FAILED] #{self.to_curl}\n"
           raise SearchRequestFailed, @response.to_s
@@ -93,7 +99,7 @@ module America
 
       def to_curl
         to_json_escaped = to_json.gsub("'",'\u0027')
-        %Q|curl -X GET '#{url}#{params.empty? ? '?' : params.to_s + '&'}' -d '#{to_json_escaped}'|
+        %Q|curl -X GET '#{base_url}#{params.empty? ? '?' : params.to_s + '&'}'|
       end
 
 
@@ -104,7 +110,7 @@ module America
           request.update( { :sort   => @sort.to_hash   } )    if @sort
           request.update( { :facets => @facets.to_hash } )    if @facets
           request.update( { :page_size => @page_size } )      if @page_size
-          request.update( { :from => @from } )                if @from
+          request.update( { :page => @page } )                if @page
           request.update( { :fields => @fields } )            if @fields
           request.update( { :query => @query })               if @query
           request

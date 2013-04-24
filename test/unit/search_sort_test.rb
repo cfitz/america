@@ -49,7 +49,11 @@ module America::Search
           output = { :sort_by_pin => "41.3,-71" }
           assert_equal  output.to_json, s.to_json
         end
-      
+        
+        should "wrap the outpt in an array" do
+          s = Sort.new { by :foo }
+          assert_equal [{:sort_by => [:foo]}], s.to_ary
+        end
 
     end
 
